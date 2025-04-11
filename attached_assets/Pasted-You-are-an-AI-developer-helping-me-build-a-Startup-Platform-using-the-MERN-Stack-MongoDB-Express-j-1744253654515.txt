@@ -1,0 +1,154 @@
+You are an AI developer helping me build a Startup Platform using the MERN Stack (MongoDB, Express.js, React.js, Node.js). This platform connects Entrepreneurs and Investors to collaborate, pitch ideas, and explore funding opportunities.
+
+Build this as a modular, scalable web application. No route protection is needed — I only require Login and Register pages for user access, but routes do not need to be guarded.
+
+👥 User Roles:
+There are 2 main user roles:
+
+Entrepreneur
+
+Investor
+
+Both users can register and login. Based on their role, they see different dashboards and functionalities.
+
+📋 Features per Role:
+✅ Common Features (for All Users):
+Register / Login (with role selection)
+
+View Profile
+
+Edit Profile
+
+Logout
+
+See Notifications / Updates
+
+🚀 Entrepreneur Features:
+Create & Manage Startup Pitch
+
+Startup name, tagline, industry
+
+Funding needed
+
+Pitch deck upload (PDF or link)
+
+Video pitch (YouTube link or upload)
+
+Add team members
+
+Edit / Delete Pitch
+
+View Investors Interested
+
+Join Live Pitch Events
+
+Receive Feedback on Pitches
+
+View Matched Investors (based on interest & industry)
+
+💼 Investor Features:
+Browse All Startups
+
+Filter by: industry, location, stage, funding amount
+
+View Startup Details
+
+Publicly shared pitches
+
+Decks, videos, descriptions
+
+Express Interest (Save / Bookmark)
+
+Leave Feedback on a Pitch
+
+Attend Live Pitch Events
+
+Create a Virtual Portfolio (Startups you’re interested in)
+
+See AI-generated Suggested Startups
+
+🧠 AI-Powered Enhancements (Using Gemini AI):
+Smart Matching System:
+
+Gemini AI analyzes investor interests and startup details to suggest relevant matches
+
+Pitch Analyzer:
+
+AI rates each pitch on Clarity, Market Need, Team Strength
+
+Feedback Generator:
+
+Based on pitch data, Gemini AI suggests constructive feedback for entrepreneurs
+
+SWOT Auto Generator:
+
+Entrepreneurs can click to auto-generate SWOT analysis from pitch input
+
+📄 Pages to Build:
+/register (with role selection)
+
+/login
+
+/dashboard (dynamic based on role)
+
+/create-pitch (Entrepreneur)
+
+/my-pitches (Entrepreneur)
+
+/browse-startups (Investor)
+
+/startup/:id (Detailed pitch view)
+
+/live-events
+
+/profile
+
+/ai-matches (optional)
+
+🧱 Tech Stack:
+Frontend: React.js (with Tailwind CSS or Chakra UI)
+
+Backend: Express.js
+
+Database: MongoDB (Mongoose ODM)
+
+AI Integration: Gemini AI API (for match, feedback, pitch analysis)
+
+Hosting:
+
+Frontend: Vercel
+
+Backend: Railway/Render
+
+Database: MongoDB Atlas
+
+🔓 Authentication Note:
+No route protection is required
+
+Only basic login and register
+
+Use localStorage to store logged-in user info (no JWT required)
+
+🗂️ Suggested Folder Structure:
+bash
+Copy
+Edit
+/client
+  /src
+    /components
+    /pages
+    /hooks
+    /api
+    /utils
+/server
+  /controllers
+  /routes
+  /models
+  /middleware
+  server.js
+💡 Bonus Ideas:
+Add badge system (Top Startup, Active Investor)
+
+Create a community chat or Q&A section
+
+Optional admin dashboard to monitor all users and pitches
