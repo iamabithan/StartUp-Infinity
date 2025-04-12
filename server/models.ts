@@ -18,7 +18,7 @@ const userSchema = new mongoose.Schema({
 
 // Startup Model
 const startupSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  userId: { type: String, ref: 'User', required: true },
   name: { type: String, required: true },
   tagline: String,
   description: String,

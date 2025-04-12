@@ -1,5 +1,6 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
+import bcrypt from "bcrypt";
 import { storage } from "./mongoStorage";
 import { 
   insertUserSchema, 
@@ -31,13 +32,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Create user
-      const user = await storage.createUser(userData);
+      // Hash password before storing
+      const hashedPassword = await bcrypt.hash(userData.password, 10);
+      const user = await storage.createUser({
+        ...userData,
+        password: hashedPassword
+      });
       
       // Don't return password in response
       const { password, ...userWithoutPassword } = user;
       
       res.status(201).json(userWithoutPassword);
-  } catch (error: any) {
+    } catch (error: any) {
       if (error.name === "ZodError") {
         return res.status(400).json({ message: "Invalid data", errors: error.errors });
       }
@@ -50,21 +56,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { username, password } = req.body;
       
       if (!username || !password) {
-        return res.status(400).json({ message: "Username and password are required" });
+        return res.status(400).json({ 
+          message: "Username and password are required",
+          field: !username ? "username" : "password"
+        });
       }
       
       const user = await storage.getUserByUsername(username);
       
-      if (!user || user.password !== password) {
-        return res.status(401).json({ message: "Invalid credentials" });
+      if (!user) {
+        console.log(`Login failed: User not found for username: ${username}`);
+        return res.status(401).json({ 
+          message: "Invalid username or password",
+          code: "USER_NOT_FOUND"
+        });
       }
       
-      // Don't return password in response
-      const { password: _, ...userWithoutPassword } = user;
+      // Compare hashed passwords
+      const passwordMatch = await bcrypt.compare(password, user.password);
+      if (!passwordMatch) {
+        console.log(`Login failed: Password mismatch for user: ${username}`);
+        return res.status(401).json({ 
+          message: "Invalid username or password",
+          code: "INVALID_PASSWORD"
+        });
+      }
       
+      // Convert Mongoose document to plain object and remove password
+      const userObj = user.toObject();
+      const { password: _, ...userWithoutPassword } = userObj;
+      
+      console.log(`Successful login for user: ${username}`);
       res.status(200).json(userWithoutPassword);
-    } catch (error) {
-      res.status(500).json({ message: "Error during login" });
+    } catch (error: unknown) {
+      console.error("Login error:", error);
+      res.status(500).json({ 
+        message: "Error during login",
+        error: process.env.NODE_ENV === 'development' && error instanceof Error ? error.message : undefined
+      });
     }
   });
 
@@ -158,6 +187,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/startups", async (req: Request, res: Response) => {
     try {
+      // Ensure userId is a string (convert from number if needed)
+      req.body.userId = req.body.userId.toString();
+      
       const startupData = insertStartupSchema.parse(req.body);
       const startup = await storage.createStartup(startupData);
       
@@ -463,7 +495,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   return httpServer;
 }
 
-async function initializeSampleData() {
+async function initializeSampleData(): Promise<void> {
   try {
     // Check if sample data already exists
     const existingEntrepreneur = await storage.getUserByUsername("entrepreneur");
@@ -472,7 +504,7 @@ async function initializeSampleData() {
     if (existingEntrepreneur && existingInvestor) {
       return; // Sample data already exists
     }
-
+    
     // Create sample users
     const entrepreneur = await storage.createUser({
       username: "entrepreneur",
@@ -504,6 +536,7 @@ async function initializeSampleData() {
     if (!entrepreneur?._id || !investor?._id) {
       throw new Error("Failed to create sample users");
     }
+    
 
     // Create sample startups
   const ecoTrack = await storage.createStartup({
@@ -643,5 +676,9 @@ async function initializeSampleData() {
       read: false,
       link: "/startups"
     });
+  }
+}
+  catch (error) {
+  console.error("Error creating sample users:", error);
   }
 }

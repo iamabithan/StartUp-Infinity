@@ -61,17 +61,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       setLoading(true);
       const response = await apiRequest("POST", "/api/auth/login", { username, password });
-      const { user: apiUser } = await response.json();
-      console.log({apiUser});
-      if (!apiUser?._id) {
-        throw new Error("Invalid response from server - missing user ID");
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Login failed");
       }
 
-      // Generate a simple token for client-side use
-      const token = btoa(JSON.stringify({
-        id: apiUser._id,
-        timestamp: Date.now()
-      }));
+      const apiUser = await response.json();
+      
+      if (!apiUser?._id) {
+        throw new Error("Invalid user data received from server");
+      }
 
       const newUser = {
         id: apiUser._id,
@@ -79,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email: apiUser.email,
         fullName: apiUser.fullName,
         role: apiUser.role,
-        token: token
+        token: apiUser.token || "" // Use server-provided token if available
       };
       setUser(newUser);
       localStorage.setItem("user", JSON.stringify(newUser));
